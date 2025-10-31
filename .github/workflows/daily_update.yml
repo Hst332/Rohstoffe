@@ -1,0 +1,33 @@
+name: Update Commodities Table Daily
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # Läuft täglich um 6:00 UTC
+  workflow_dispatch:      # Manuelles Ausführen möglich
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: pip install pandas openpyxl
+
+      - name: Generate Commodities Files
+        run: python generate_commodities.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add commodities_probabilities_*.csv commodities_probabilities_*.xlsx
+          git commit -m "Automated daily commodities update"
+          git push
