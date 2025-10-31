@@ -2,14 +2,14 @@ name: Update Commodities Table Daily
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * *"  # täglich um 06:00 UTC
   workflow_dispatch:
 
 permissions:
-  contents: write  # <— wichtig! Erlaubt Push-Berechtigung
+  contents: write  # erlaubt push
 
 jobs:
-  build:
+  update:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run: pip install pandas openpyxl
 
-      - name: Generate Commodities Files
+      - name: Run Update Script
         run: python generate_commodities.py
 
       - name: Commit and Push Changes
@@ -35,5 +35,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add -A
-          git commit -m "Automated daily commodities update $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git commit -m "🔁 Update commodities data ($(date +'%Y-%m-%d'))" || echo "No changes to commit"
           git push
