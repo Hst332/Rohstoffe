@@ -1,7 +1,8 @@
 import pandas as pd
 from datetime import datetime
+import os
 
-# === Rohstoffdaten mit geschätzten Wahrscheinlichkeiten ===
+# === Datenbasis ===
 data = [
     ["Gold (XAU/USD)", 30, 40, 30, "Kurze Konsolidierung, schwaches Momentum.", 45, 30, 25, "Mittelfristig unterstützt durch realzinsgetriebene Nachfrage."],
     ["Silber (XAG/USD)", 35, 35, 30, "Volatil, kurzfristige Rangebildung.", 50, 30, 20, "Mittelfristig durch industrielle Nachfrage gestützt."],
@@ -24,17 +25,44 @@ cols = [
 ]
 
 df = pd.DataFrame(data, columns=cols)
-
-# Differenzen und Ranking
 df["Diff_1-5"] = abs(df["1-5T_Steigt"] - df["1-5T_Fällt"])
 df["Diff_2-3W"] = abs(df["2-3W_Steigt"] - df["2-3W_Fällt"])
 df = df.sort_values(by="Diff_1-5", ascending=False)
 
-# Zeitstempel
+# === Speichern ===
 date_str = datetime.now().strftime("%Y-%m-%d")
+csv_name = f"commodities_probabilities_{date_str}.csv"
+xlsx_name = f"commodities_probabilities_{date_str}.xlsx"
+df.to_csv(csv_name, index=False)
+df.to_excel(xlsx_name, index=False)
 
-# Speichern
-df.to_csv(f"commodities_probabilities_{date_str}.csv", index=False)
-df.to_excel(f"commodities_probabilities_{date_str}.xlsx", index=False)
+# === Markdown-Tabelle erzeugen ===
+md_table = "| Anlageklasse | Steigt | Bleibt gleich | Fällt | Einschätzung (1–5 Tage) |\n"
+md_table += "|---------------|---------|----------------|--------|--------------------------|\n"
+for _, r in df.iterrows():
+    md_table += f"| {r['Anlageklasse']} | {r['1-5T_Steigt']}% | {r['1-5T_Bleibt']}% | {r['1-5T_Fällt']}% | {r['Einschätzung_1-5T']} |\n"
 
-print(f"✅ Dateien erstellt für {date_str}")
+readme_section = f"### 📊 Rohstoff-Wahrscheinlichkeiten (aktualisiert: {date_str})\n\n{md_table}\n"
+
+# === README.md aktualisieren ===
+readme_path = "README.md"
+if os.path.exists(readme_path):
+    with open(readme_path, "r", encoding="utf-8") as f:
+        content = f.read()
+else:
+    content = ""
+
+start_tag = "<!--AUTO-TABLE-START-->"
+end_tag = "<!--AUTO-TABLE-END-->"
+
+if start_tag in content and end_tag in content:
+    before = content.split(start_tag)[0]
+    after = content.split(end_tag)[1]
+    new_content = f"{before}{start_tag}\n{readme_section}\n{end_tag}{after}"
+else:
+    new_content = f"{start_tag}\n{readme_section}\n{end_tag}"
+
+with open(readme_path, "w", encoding="utf-8") as f:
+    f.write(new_content)
+
+print(f"✅ Daten & README aktualisiert für {date_str}")
