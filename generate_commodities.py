@@ -31,9 +31,9 @@ df["Diff_1-5"] = abs(df["1-5T_Steigt"] - df["1-5T_Fällt"])
 df["Diff_2-3W"] = abs(df["2-3W_Steigt"] - df["2-3W_Fällt"])
 df = df.sort_values(by="Diff_1-5", ascending=False)
 
-# === Datumsspalte hinzufügen ===
+# === Datumsspalte hinzufügen (direkt nach Anlageklasse) ===
 datum = datetime.now().strftime("%Y-%m-%d")
-df["Datum"] = datum
+df.insert(1, "Datum", datum)
 
 # === Alte CSV löschen ===
 for f in os.listdir("."):
