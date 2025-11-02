@@ -31,13 +31,17 @@ df["Diff_1-5"] = abs(df["1-5T_Steigt"] - df["1-5T_Fällt"])
 df["Diff_2-3W"] = abs(df["2-3W_Steigt"] - df["2-3W_Fällt"])
 df = df.sort_values(by="Diff_1-5", ascending=False)
 
+# === Datumsspalte hinzufügen ===
+datum = datetime.now().strftime("%Y-%m-%d")
+df["Datum"] = datum
+
 # === Alte CSV löschen ===
 for f in os.listdir("."):
     if f.startswith("commodities_probabilities_") and f.endswith(".csv"):
         os.remove(f)
 
 # === Neue CSV erzeugen ===
-date_str = datetime.now().strftime("%Y-%m-%d")
-csv_name = f"commodities_probabilities_{date_str}.csv"
+csv_name = f"commodities_probabilities_{datum}.csv"
 df.to_csv(csv_name, index=False)
+
 print(f"✅ Neue Datei erstellt: {csv_name}")
